@@ -1,0 +1,84 @@
+version: '#{build}'
+
+image:
+  - Ubuntu1804
+  - Visual Studio 2017
+
+environment:
+  matrix:
+    - compiler: gcc
+    - compiler: msvc
+  
+for:
+  - 
+    matrix:
+      only:
+        - image: Ubuntu1804
+          compiler: gcc
+    install:
+      - sh: sudo pip install conan
+      - sh: conan config install https://github.com/Linux13524/conan-config.git
+    build_script:
+      - sh: set -e
+      - sh: git submodule update --init --recursive
+      - sh: mkdir build
+      - sh: cd build
+      - sh: cmake -DCMAKE_BUILD_TYPE=Release ..
+      - sh: cmake --build . --config Release
+    after_build:
+      - sh: tar -zcf YoutubeListDownloaderCLI-Linux.tar.gz -C bin YoutubeListDownloaderCLI
+      - sh: appveyor PushArtifact YoutubeListDownloaderCLI-Linux.tar.gz
+
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2017
+          compiler: gcc
+    init:
+      - cmd: set PATH=%PATH%;C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64\bin
+      - cmd: set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
+    install:
+      - cmd: pip.exe install conan
+      - cmd: conan config install https://github.com/Linux13524/conan-config.git
+    build_script:
+      - cmd: git submodule update --init --recursive
+      - cmd: mkdir build
+      - cmd: cd build
+      - cmd: cmake -G "CodeBlocks - MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release  ..
+      - cmd: cmake --build .
+      
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2017
+          compiler: msvc
+    init:
+      - cmd: '"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64'
+    install:
+      - cmd: pip.exe install conan
+      - cmd: conan config install https://github.com/Linux13524/conan-config.git
+    build_script:
+      - cmd: git submodule update --init --recursive
+      - cmd: mkdir build
+      - cmd: cd build
+      - cmd: cmake -G "CodeBlocks - NMake Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+      - cmd: cmake --build .
+    after_build:
+      - cmd: appveyor PushArtifact bin/YoutubeListDownloaderCLI.exe    
+
+matrix:      
+  exclude:
+    - image: Ubuntu1804
+      compiler: msvc
+
+test: off
+deploy:
+- provider: GitHub
+  tag: ${APPVEYOR_REPO_TAG_NAME}
+  release: Youtube-List-Downloader-${APPVEYOR_REPO_TAG_NAME}
+  auth_token:
+    secure: au6VwWctG8C8VZw4oYoMHuBGD48txAVZThYjYXrw6nIkysc516eVK2amtwl399xl
+  prerelease: true
+  on:
+    branch: master
+    APPVEYOR_REPO_TAG: true
