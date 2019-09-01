@@ -1,6 +1,6 @@
 [requires]
 boost/1.69.0@conan/stable
-youtube_list_downloader/1.0.1@linux13524/stable
+youtube_list_downloader/1.0.2@linux13524/stable
 
 [generators]
 cmake
