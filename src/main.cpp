@@ -73,7 +73,7 @@ int main(int p_argument_count, char** p_argument_vector) {
 
         if (vm.count("download-video") != 0u) {
             Youtube::Video video = Youtube::Video::Get(vm["download-video"].as<std::string>());
-            video.LoadDownloadLinks();
+            video.LoadDownloadLinks(5);
             Youtube::Video::Download(video);
             return 0;
         }
